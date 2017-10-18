@@ -11,6 +11,7 @@ cd stacks-1.32
 make
 make install
 ```
+note this is for stacks 1.32, there are many good updates using later versions of stacks, which may require changes in the scripts
 
 ## Step 1: check data quality using fastqc
 ```
@@ -110,5 +111,27 @@ done
 ```
 special note: xxx.alleles.tsv don't have all the 1-allele loci, so you need to get this number from total_loci above
 
+## Step 7: denovo assembly
+```
+mkdir denovo-skinks
+cd merged/alldata/
+inputL=`ls *.fq.gz | awk '{printf "-s "$1 " "}'`
+echo "nohup ~/bin/stacks1.32/bin/denovo_map.pl -m 3 -M 4 -n 4 -S -b 5 -D 'skink' -T 8 -t --bound_high 0.05 -o ~/nobackup-klohmuel/skinks/denovo-skinks" $inputL " > ~/nobackup-klohmuel/skinks/denovo-skinks/nohup.out" | bash
+```
+## Step 8: correction mode - rxstacks, optional but recommended by stacks author.
+rxstacks takes lots of memory, i.e. 100G, 9hrs for 200 bird samples. If memory allocation is not enough on cluster, sometimes it aborted without warning message for me. So you really need to check log file to make sure the run has finished, ie. the log file has a normal ending. 
+```
+mkdir denovo-sunbird-cor
+~/bin/stacks1.32/bin/rxstacks -b 1 -P denovo-sunbird/ -o denovo-sunbird-cor/ --conf_lim 0.25 --prune_haplo --model_type bounded --bound_high 0.05 --lnl_lim -10.0 --lnl_dist -t 16 --verbose
+```
+rerun cstacks and sstacks after rxstacks
+```
+cd denovo-sunbird-cor
+inputL=`ls *.tags.tsv.gz | cut -d '.' -f1 | awk '{printf "-s "$1 " "}'`
+echo "nohup ~/bin/stacks1.32/bin/cstacks -n 4 -b 1 -p 36 -o ./" $inputL " >./nohup.out" | bash
 
-
+gunzip batch_1.catalog*
+for sample in `ls *.tags.tsv.gz | cut -d '.' -f1 `;
+ do ~/bin/stacks1.32/bin/sstacks -b 1 -c ./batch_1 -s "$sample" -o ./ ;
+done;
+```
