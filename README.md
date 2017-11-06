@@ -1,5 +1,5 @@
 # RADseq_pipeline
-I describe here the pipeline I used to process RADseq data from non-model organisms without a reference genome. The pipeline starts with fastq files returned from sequencing center and finishes with a list of loci that pass various filters and variants in VCF format.
+I describe here the pipeline I used to process RADseq data from non-model organisms without a reference genome. The pipeline starts with fastq files returned from sequencing center and finishes with a list of loci that pass various filters and SNP variants in VCF format.
 
 ## install stacks 1.32
 download stacks from http://catchenlab.life.illinois.edu/stacks/, where also hosts good tutorial and information of the stacks pipeline
