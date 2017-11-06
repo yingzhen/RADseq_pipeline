@@ -135,3 +135,49 @@ for sample in `ls *.tags.tsv.gz | cut -d '.' -f1 `;
  do ~/bin/stacks1.32/bin/sstacks -b 1 -c ./batch_1 -s "$sample" -o ./ ;
 done;
 ```
+## Step 9: additional filters of RAD loci
+1. use script get_consensus_tags.pl to retrieve consensus RAD loci that present in > 80% of all samples
+```
+perl ~/myscripts/get_consensus_tags.pl batch_5.catalog.tags.tsv 167
+```
+batch_5.catalog.tags.tsv is the output from denovo_map.pl or rxstacks step
+167 is the total number of sample * 0.8, round up, here is 208*0.8, change this number according to your sample size
+
+output files includes a list of consensus RAD loci in file RAD_consensus_ID
+
+2. check SNP distribution patterns in these loci using script get_RAD_SNP.pl
+```
+perl ~/myscripts/get_RAD_SNP.pl RAD_consensus_ID batch_5.catalog.snps.tsv 
+```
+output gives the number of SNPs per loci, and the distribution of SNPs along the base positions of loci
+
+3. remove loci that have too much polymorphic sites
+I remove loci (94bp long) that have more than 40 SNPs
+```
+awk '$2<=40' RAD_consensus_ID.tags_SNPct | cut -f1 > RAD_consensus_ID_40
+```
+
+4. remove loci that are potentially paralogs (blat to each other)
+```
+/u/local/apps/blat/34/bin/blat RAD_consensus_sequence.fa RAD_consensus_sequence.fa RAD_consen_selfblat.psl
+cut -f10 RAD_consen_selfblat.psl | sed '1,5d' | sort | uniq -d > RAD_consen_selfblat.Duplicates
+comm -23 <(sort RAD_consensus_ID_40) <(sort RAD_consen_selfblat.Duplicates) > RAD_consensus_final
+```
+
+5. optional: if you have a reference genome of close relative, you can also map to it and remove tags that mapped to multiple positions of the genome
+
+6. count how many consensus tags each sample has
+I consider a sample bad if it doesn’t have >=80% of the consensus tags and remove them for final analysis.  
+```
+perl ~/myscripts/count_consensusTag_perSample.pl RAD_consensus_final batch_5.catalog.tags.tsv 208
+```
+
+## Step 10: run populations, export genotype information in VCF format
+```
+dir=/u/home/z/zhen/nobackup-klohmuel/skinks/denovo-skinks
+~/bin/stacks1.32/bin/populations -P $dir -W $dir/RAD_consensus_final -r 0.8 -s -b 5 -t 36 --vcf 
+```
+Additionally but important! remove SNPs in the last 7 bp of RAD loci, where there is an enrichment of erroneous SNPs. 
+```
+perl ~/myscripts/remove_3priSNP_vcf.pl batch_1.vcf 
+```
