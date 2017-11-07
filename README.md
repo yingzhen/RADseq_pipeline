@@ -143,13 +143,18 @@ perl ~/myscripts/get_consensus_tags.pl batch_5.catalog.tags.tsv 167
 batch_5.catalog.tags.tsv is the output from denovo_map.pl or rxstacks step
 167 is the total number of sample * 0.8, round up, here is 208*0.8, change this number according to your sample size
 
-output files includes a list of consensus RAD loci in file RAD_consensus_ID
+output files 
+RAD_consensus_ID: a list of consensus RAD loci that pass the filter
+RAD_consensus_sequence.fa: sequences of these consensus RAD loci
 
 2. check SNP distribution patterns in these loci using script get_RAD_SNP.pl
 ```
 perl ~/myscripts/get_RAD_SNP.pl RAD_consensus_ID batch_5.catalog.snps.tsv 
 ```
-output gives the number of SNPs per loci, and the distribution of SNPs along the base positions of loci
+output files
+RAD_ID_list.SNP.tsv       SNP file for the RAD loci list
+RAD_ID_list.tags_SNPct    number of SNPs for each RAD loci in the list
+RAD_ID_list.bp_SNPct      base position along the RADtag where the SNP is observed & SNP number found in that positon across all RADcontigs
 
 3. remove loci that have too much polymorphic sites
 I remove loci (94bp long) that have more than 40 SNPs
@@ -171,6 +176,7 @@ I consider a sample bad if it doesn’t have >=80% of the consensus tags and rem
 ```
 perl ~/myscripts/count_consensusTag_perSample.pl RAD_consensus_final batch_5.catalog.tags.tsv 208
 ```
+208 is the total number of samples. 
 
 ## Step 10: run populations, export genotype information in VCF format
 ```
