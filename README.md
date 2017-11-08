@@ -26,10 +26,10 @@ gunzip read1.fastq.gz
 
 perl flip_trim_werrors.pl barcodes.txt read1.fastq read2.fastq outfile_read1.fq outfile_read2.fq true 2
 ```
-format of barcode file: barcode /tab/ sample
-    AAACGG  0606BZ
-    AACGTT  0607BZ
-    AACTGA  0643BZ
+format of barcode file: barcode tab samplename
+AAACGG  0606BZ
+AACGTT  0607BZ
+AACTGA  0643BZ
 
 ## Step 3 : demultiplex and remove adaptor sequences, for paired-end data
 ```
